@@ -1,11 +1,11 @@
-use gosumemory_helper::Gosumemory; 
-use tungstenite::{connect, Message};
+use gosumemory_helper::Gosumemory;
+use std::default::Default;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::spawn;
-use tokio::time::sleep;
 use tokio::sync::RwLock;
-use std::sync::Arc;
-use std::default::Default;
+use tokio::time::sleep;
+use tungstenite::{connect, Message};
 
 const UPDATE_SLEEP: Duration = Duration::from_millis(100);
 
@@ -15,12 +15,12 @@ pub struct Server {
 }
 
 impl Server {
-
-    // inits the Server struct by connecting to Gosumemory and polling through the socket messages. 
+    // inits the Server struct by connecting to Gosumemory and polling through the socket messages.
     // If the Message is different from the previous message, it will update the Gosumemory struct.
     pub async fn init(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let (mut socket, _response) = connect("ws://localhost:24050/ws").expect("Can't connect to gosumemory");
-        
+        let (mut socket, _response) =
+            connect("ws://localhost:24050/ws").expect("Can't connect to gosumemory");
+
         spawn({
             let data = Arc::clone(&self.data);
             async move {
@@ -32,7 +32,6 @@ impl Server {
                             *data.write().await = mem;
                             tmp = msg;
                         }
-
                     }
                     sleep(UPDATE_SLEEP).await;
                 }
@@ -40,7 +39,6 @@ impl Server {
         });
         Ok(())
     }
-   
 
     pub async fn get_struct(&self) -> Gosumemory {
         let mem: &Gosumemory = &*self.data.read().await;

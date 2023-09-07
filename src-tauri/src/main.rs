@@ -3,10 +3,10 @@
 
 use map::np::get_np;
 use server::ws::Server;
+use std::time::Duration;
 use tauri::{Manager, Window};
 use tokio::spawn;
 use tokio::time::sleep;
-use std::time::Duration;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
@@ -18,22 +18,21 @@ async fn np(window: &Window, server: &Server) {
     window.emit("np", get_np(data).await).unwrap_or(());
 }
 
-
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>>{
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut ws = Server::default();
     ws.init().await?;
     tauri::Builder::default()
-    .setup(|app| {
-        let main_window = app.get_window("main").unwrap();
-        spawn(async move {
-            loop {
-                np(&main_window, &ws).await;
-                sleep(Duration::from_millis(120)).await;
-            }
-        });
-        Ok(())
-    })
+        .setup(|app| {
+            let main_window = app.get_window("main").unwrap();
+            spawn(async move {
+                loop {
+                    np(&main_window, &ws).await;
+                    sleep(Duration::from_millis(120)).await;
+                }
+            });
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![zzz])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -41,6 +40,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>{
 }
 
 #[tauri::command]
-async fn zzz() {
-
-}
+async fn zzz() {}
