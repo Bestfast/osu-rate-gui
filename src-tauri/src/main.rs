@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use spdlog::prelude::*;
 use map::np::get_np;
 use server::ws::Server;
 use std::time::Duration;
@@ -13,21 +14,27 @@ use tokio::time::sleep;
 pub mod map;
 pub mod server;
 
-async fn np(window: &Window, server: &Server) {
+async fn poll(window: &Window, server: &Server) {
     let data = server.get_struct().await;
-    window.emit("np", get_np(data).await).unwrap_or(());
+    match window.emit("poll", data.menu.bm.metadata) {
+        Ok(_) => trace!("Emitted poll successfully"),
+        Err(e) => warn!("Something unexpected happened while emitting poll: {}", e),
+    }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    spdlog::default_logger().set_level_filter(LevelFilter::MoreSevereEqual(Level::Info));
     let mut ws = Server::default();
+    info!["Starting init..."];
     ws.init().await?;
     tauri::Builder::default()
         .setup(|app| {
+            info!("Starting main window");
             let main_window = app.get_window("main").unwrap();
             spawn(async move {
                 loop {
-                    np(&main_window, &ws).await;
+                    poll(&main_window, &ws).await;
                     sleep(Duration::from_millis(120)).await;
                 }
             });

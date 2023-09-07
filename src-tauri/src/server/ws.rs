@@ -6,6 +6,7 @@ use tokio::spawn;
 use tokio::sync::RwLock;
 use tokio::time::sleep;
 use tungstenite::{connect, Message};
+use spdlog::prelude::*;
 
 const UPDATE_SLEEP: Duration = Duration::from_millis(100);
 
@@ -20,7 +21,7 @@ impl Server {
     pub async fn init(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         let (mut socket, _response) =
             connect("ws://localhost:24050/ws").expect("Can't connect to gosumemory");
-
+        info!("Connected to gosumemory successfully");
         spawn({
             let data = Arc::clone(&self.data);
             async move {
@@ -28,6 +29,7 @@ impl Server {
                 loop {
                     if let Ok(msg) = socket.read() {
                         if tmp != msg {
+                            trace!("Received message from gosumemory that's different from the previous one, parsing it", );
                             let mem: Gosumemory = parse(&msg);
                             *data.write().await = mem;
                             tmp = msg;
