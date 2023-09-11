@@ -8,6 +8,7 @@ use std::time::Duration;
 use tauri::{Manager, Window};
 use tokio::spawn;
 use tokio::time::sleep;
+use tokio::sync::watch;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 
@@ -27,15 +28,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     spdlog::default_logger().set_level_filter(LevelFilter::MoreSevereEqual(Level::Info));
     let mut ws = Server::default();
     info!["Starting init..."];
-    ws.init().await?;
+    let (tx, mut rx) = watch::channel(());
+    ws.init(tx).await?;
     tauri::Builder::default()
         .setup(|app| {
             info!("Starting main window");
             let main_window = app.get_window("main").unwrap();
             spawn(async move {
                 loop {
-                    poll(&main_window, &ws).await;
-                    sleep(Duration::from_millis(120)).await;
+                    while rx.changed().await.is_ok() {
+                        poll(&main_window, &ws).await;
+                    }
                 }
             });
             Ok(())

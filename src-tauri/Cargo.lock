@@ -1790,7 +1790,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tokio",
- "tungstenite 0.20.0",
+ "tokio-tungstenite",
  "url",
 ]
 
@@ -3100,6 +3100,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.29",
+]
+
+[[package]]
+name = "tokio-tungstenite"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2b2dbec703c26b00d74844519606ef15d09a7d6857860f84ad223dec002ddea2"
+dependencies = [
+ "futures-util",
+ "log",
+ "tokio",
+ "tungstenite 0.20.0",
 ]
 
 [[package]]
