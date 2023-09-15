@@ -4,11 +4,9 @@ use std::default::Default;
 use std::sync::Arc;
 use tokio::spawn;
 use tokio::sync::{RwLock, watch};
-use tokio::time::{sleep, Duration};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 use spdlog::prelude::*;
 
-const UPDATE_SLEEP: Duration = Duration::from_millis(100);
 
 
 #[derive(Default, Clone)]

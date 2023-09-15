@@ -11,6 +11,7 @@
     metadata = event.payload;
     console.log("a");
   })
+
   
   $: {
     if (metadata) {
